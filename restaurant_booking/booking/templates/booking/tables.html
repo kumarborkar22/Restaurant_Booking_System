@@ -11,7 +11,7 @@
             text-align: center;
         }
 
-        h1 {
+        h1, h2 {
             color: #333;
         }
 
@@ -43,36 +43,62 @@
             background-color: #dc3545; /* Red */
             cursor: not-allowed;
         }
+
+        .last-booked {
+            background-color: #ffc107; /* Yellow */
+            color: #333;
+            border: 2px solid #28a745;
+        }
     </style>
 </head>
 <body>
     <h1>Table Status</h1>
+
+    <!-- ✅ Show last booked table -->
+    <h2>
+        {% if last_booked_table %}
+            ✅ Last Booked Table: <span style="color: #28a745;">Table {{ last_booked_table }}</span>
+        {% else %}
+            ❌ No Table Booked Yet
+        {% endif %}
+    </h2>
+
     <div class="table-container" id="tableContainer"></div>
 
     <script>
-        // ✅ Parse booked tables correctly from Django
+        // ✅ Get booked tables and last booked table from Django
         const bookedTables = JSON.parse('{{ booked_tables|safe|escapejs }}');
+        const lastBookedTable = JSON.parse('{{ last_booked_table|default:"null"|safe|escapejs }}');
+
         console.log("📚 Booked Tables:", bookedTables);
-    
+        console.log("✅ Last Booked Table:", lastBookedTable);
+
         function renderTables() {
             const tableContainer = document.getElementById('tableContainer');
             tableContainer.innerHTML = '';
-    
+
             for (let i = 1; i <= 10; i++) {
-                const isBooked = bookedTables.includes(i); // ✅ Correct check here
+                const isBooked = bookedTables.includes(i);
+                const isLastBooked = i === lastBookedTable;
+
                 const tableDiv = document.createElement('div');
-                tableDiv.className = `table ${isBooked ? 'booked' : 'available'}`;
+                
+                // ✅ Apply green for last booked table, red for other booked
+                if (isLastBooked) {
+                    tableDiv.className = 'table last-booked'; // Highlight last booked in yellow-green
+                } else if (isBooked) {
+                    tableDiv.className = 'table booked'; // Mark others in red
+                } else {
+                    tableDiv.className = 'table available'; // Available = green
+                }
+
                 tableDiv.innerText = `Table ${i}`;
-    
                 tableContainer.appendChild(tableDiv);
             }
         }
-    
+
+        // ✅ Render tables on load
         window.onload = renderTables;
     </script>
-    
-    
-    
-    
 </body>
 </html>
