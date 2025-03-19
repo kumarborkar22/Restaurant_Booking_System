@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Restaurant Booking System</title>
+    <link rel="stylesheet" type="text/css" href="/static/styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        p {
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+        form {
+            text-align: left;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .success, .error {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Our Restaurant</h1>
+        <p>Book your table now!</p>
+
+        <!-- Reservation Form -->
+        <form id="reservationForm">
+            {% csrf_token %}
+            
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="phone">Phone:</label>
+            <input type="text" id="phone" name="phone" required>
+
+            <label for="date">Date:</label>
+            <input type="date" id="date" name="date" required>
+
+            <label for="time">Time:</label>
+            <input type="time" id="time" name="time" required>
+
+            <label for="guests">Number of Guests:</label>
+            <input type="number" id="guests" name="guests" min="1" required>
+
+            <!-- ✅ Table Selection Dropdown -->
+            <label for="table">Select Table:</label>
+            <select id="table" name="table" required>
+                <option value="">Loading available tables...</option>
+            </select>
+
+            <button type="submit">Book Now</button>
+        </form>
+
+        <!-- Success/ Error Messages -->
+        <div id="responseMessage" class="success" style="display: none;"></div>
+    </div>
+
+    <script>
+        // ✅ Load available tables dynamically
+        async function loadTables() {
+            try {
+                const response = await fetch('/api/tables/');
+                if (response.ok) {
+                    const tables = await response.json();
+                    const tableDropdown = document.getElementById('table');
+                    tableDropdown.innerHTML = '';  // Clear existing options
+
+                    // Populate table dropdown with available tables
+                    tables.forEach(table => {
+                        tableDropdown.innerHTML += `<option value="${table.id}">Table ${table.table_number} (Capacity: ${table.capacity})</option>`;
+                    });
+                } else {
+                    throw new Error('Failed to load tables.');
+                }
+            } catch (error) {
+                console.error(`❌ Error loading tables: ${error.message}`);
+                document.getElementById('table').innerHTML = `<option value="">Error loading tables!</option>`;
+            }
+        }
+
+        // ✅ Load tables when page loads
+        window.onload = loadTables;
+
+        // ✅ Handle form submission for customer and reservation
+        document.getElementById('reservationForm').onsubmit = async function(e) {
+            e.preventDefault();
+
+            // Collect form data
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                date: document.getElementById('date').value,
+                time: document.getElementById('time').value,
+                guests: parseInt(document.getElementById('guests').value),
+                table: parseInt(document.getElementById('table').value)  // ✅ Get selected table dynamically
+            };
+
+            try {
+                // ✅ Step 1: Create Customer
+                const customerResponse = await fetch('/api/customers/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        name: formData.name,
+                        email: formData.email,
+                        phone: formData.phone
+                    })
+                });
+
+                const customerData = await customerResponse.json();
+
+                if (customerResponse.status === 200 || customerResponse.status === 201) {
+                    const customerId = customerData.id;
+
+                    // ✅ Step 2: Create Reservation with dynamic table selection
+                    const reservationResponse = await fetch('/api/reservations/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({
+                            customer: customerId,
+                            table: formData.table,
+                            date: formData.date,
+                            time: formData.time,
+                            guests: formData.guests
+                        })
+                    });
+
+                    if (!reservationResponse.ok) {
+                        throw new Error('Failed to create reservation. Please try again.');
+                    }
+
+                    const reservationData = await reservationResponse.json();
+
+                    // ✅ Show success message
+                    document.getElementById('responseMessage').style.display = 'block';
+                    document.getElementById('responseMessage').className = 'success';
+                    document.getElementById('responseMessage').innerText = '🎉 Reservation successful! You will receive a confirmation email shortly.';
+
+                    // Clear form after success
+                    document.getElementById('reservationForm').reset();
+
+                } else {
+                    throw new Error(customerData.error || 'Failed to create customer.');
+                }
+
+            } catch (error) {
+                // ❌ Show error message
+                document.getElementById('responseMessage').style.display = 'block';
+                document.getElementById('responseMessage').className = 'error';
+                document.getElementById('responseMessage').innerText = `❌ Error: ${error.message}`;
+            }
+        };
+    </script>
+</body>
+</html>
