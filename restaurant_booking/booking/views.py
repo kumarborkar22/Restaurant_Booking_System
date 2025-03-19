@@ -123,19 +123,19 @@ from django.http import JsonResponse
 #     return render(request, 'index.html')
 
 def table_status(request):
-    # ✅ Get all booked tables
+    # ✅ Get all booked tables (persist even after multiple bookings)
     reservations = Reservation.objects.values_list('table__table_number', flat=True)
     booked_tables = list(set(reservations))
     
-    # ✅ Get the last booked table (if available)
+    # ✅ Get the last booked table
     last_reservation = Reservation.objects.order_by('-id').first()
     last_booked_table = last_reservation.table.table_number if last_reservation else None
-    
+
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         # ✅ Return JSON for AJAX requests
         return JsonResponse({'booked_tables': booked_tables, 'last_booked_table': last_booked_table})
 
-    # ✅ For regular page load, pass data to tables.html
+    # ✅ Pass as JSON string for initial page load
     return render(request, 'booking/tables.html', {
         'booked_tables': json.dumps(booked_tables),
         'last_booked_table': last_booked_table

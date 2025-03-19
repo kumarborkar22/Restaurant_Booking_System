@@ -68,37 +68,47 @@
     <script>
         // ✅ Get booked tables and last booked table from Django
         const bookedTables = JSON.parse('{{ booked_tables|safe|escapejs }}');
-        const lastBookedTable = JSON.parse('{{ last_booked_table|default:"null"|safe|escapejs }}');
-
+        let lastBookedTable = '{{ last_booked_table|default:"null" }}';
+    
+        // ✅ Ensure lastBookedTable is parsed correctly
+        if (lastBookedTable !== "null") {
+            lastBookedTable = parseInt(lastBookedTable); // Convert to number if not null
+        } else {
+            lastBookedTable = null; // Keep as null if no table booked yet
+        }
+    
         console.log("📚 Booked Tables:", bookedTables);
         console.log("✅ Last Booked Table:", lastBookedTable);
-
+    
         function renderTables() {
             const tableContainer = document.getElementById('tableContainer');
-            tableContainer.innerHTML = '';
-
+            tableContainer.innerHTML = ''; // Clear previous table rendering
+    
             for (let i = 1; i <= 10; i++) {
-                const isBooked = bookedTables.includes(i);
-                const isLastBooked = i === lastBookedTable;
-
+                const isBooked = bookedTables.includes(i); // Check if the table is booked
+                const isLastBooked = i === lastBookedTable; // Check if it's the last booked
+    
                 const tableDiv = document.createElement('div');
-                
-                // ✅ Apply green for last booked table, red for other booked
+    
+                // ✅ Correct logic to show multiple booked tables with one highlighted
                 if (isLastBooked) {
-                    tableDiv.className = 'table last-booked'; // Highlight last booked in yellow-green
+                    tableDiv.className = 'table last-booked'; // Highlight last booked
                 } else if (isBooked) {
                     tableDiv.className = 'table booked'; // Mark others in red
                 } else {
                     tableDiv.className = 'table available'; // Available = green
                 }
-
+    
                 tableDiv.innerText = `Table ${i}`;
                 tableContainer.appendChild(tableDiv);
             }
         }
-
+    
         // ✅ Render tables on load
         window.onload = renderTables;
     </script>
+    
+    
+    
 </body>
 </html>
