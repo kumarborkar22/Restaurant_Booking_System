@@ -32,7 +32,7 @@
 
         .table-container {
             display: grid;
-            grid-template-columns: repeat(5, 1fr); /* 5 columns layout */
+            grid-template-columns: repeat(5, 1fr);
             gap: 15px;
             margin-top: 20px;
         }
@@ -50,12 +50,12 @@
         }
 
         .available {
-            background-color: #28a745; /* Green for available */
+            background-color: #28a745;
             color: white;
         }
 
         .booked {
-            background-color: #dc3545; /* Red for booked */
+            background-color: #dc3545;
             color: white;
             cursor: not-allowed;
         }
@@ -97,25 +97,20 @@
         <h1>Table Status</h1>
         <p>Select a table to book</p>
 
-        <!-- 🎯 Table Grid Section -->
         <div class="table-container" id="tableContainer">
-            <!-- Tables will be loaded dynamically here -->
         </div>
 
         <button onclick="fetchTableStatus()">🔄 Refresh Status</button>
 
-        <!-- ✅ Success/Error Messages -->
         <div id="responseMessage" class="success" style="display: none;"></div>
     </div>
 
     <script>
-        // ✅ Initial fetch of table status on page load
         document.addEventListener('DOMContentLoaded', fetchTableStatus);
 
-        // ✅ Fetch table status from API
         async function fetchTableStatus() {
             try {
-                const response = await fetch('/api/tables/'); // API to get all tables
+                const response = await fetch('/api/tables/');
                 if (!response.ok) {
                     throw new Error('Failed to load table status.');
                 }
@@ -127,10 +122,9 @@
             }
         }
 
-        // ✅ Render table layout dynamically
         function renderTables(tables) {
             const tableContainer = document.getElementById('tableContainer');
-            tableContainer.innerHTML = ''; // Clear existing tables
+            tableContainer.innerHTML = '';
 
             for (let i = 1; i <= 10; i++) {
                 const table = tables.find(t => t.table_number === i);
@@ -141,7 +135,6 @@
                 tableDiv.innerText = `Table ${i}`;
                 tableDiv.dataset.tableId = i;
 
-                // Prevent click if the table is booked
                 if (!isBooked) {
                     tableDiv.onclick = () => bookTable(i);
                 }
@@ -150,24 +143,22 @@
             }
         }
 
-        // ✅ Book a table
         async function bookTable(tableId) {
             try {
-                // Get customer details from localStorage (optional for logged-in users)
                 const customerId = localStorage.getItem('customer_id') || 1;
 
                 const response = await fetch('/api/reservations/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}' // CSRF token for security
+                        'X-CSRFToken': '{{ csrf_token }}'
                     },
                     body: JSON.stringify({
                         customer: customerId,
                         table: tableId,
-                        date: getTodayDate(), // Default to today’s date
-                        time: '19:00',       // Default time for reservation
-                        guests: 2           // Default guest count
+                        date: getTodayDate(),
+                        time: '19:00',
+                        guests: 2
                     })
                 });
 
@@ -177,13 +168,12 @@
                 }
 
                 showMessage('🎉 Table booked successfully!', 'success');
-                fetchTableStatus(); // Refresh table status after booking
+                fetchTableStatus();
             } catch (error) {
                 showMessage(`❌ Error: ${error.message}`, 'error');
             }
         }
 
-        // ✅ Get today's date in YYYY-MM-DD format
         function getTodayDate() {
             const today = new Date();
             const yyyy = today.getFullYear();
@@ -192,14 +182,12 @@
             return `${yyyy}-${mm}-${dd}`;
         }
 
-        // ✅ Show success/error messages
         function showMessage(message, type) {
             const responseMessage = document.getElementById('responseMessage');
             responseMessage.innerText = message;
             responseMessage.className = type;
             responseMessage.style.display = 'block';
 
-            // Hide message after 3 seconds
             setTimeout(() => {
                 responseMessage.style.display = 'none';
             }, 3000);

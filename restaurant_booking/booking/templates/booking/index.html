@@ -86,7 +86,6 @@
         <h1>Welcome to Our Restaurant</h1>
         <p>Book your table now!</p>
 
-        <!-- Reservation Form -->
         <form id="reservationForm">
             {% csrf_token %}
             
@@ -108,7 +107,6 @@
             <label for="guests">Number of Guests:</label>
             <input type="number" id="guests" name="guests" min="1" required>
 
-            <!-- ✅ Table Selection Dropdown -->
             <label for="table">Select Table:</label>
             <select id="table" name="table" required>
                 <option value="">Loading available tables...</option>
@@ -117,21 +115,18 @@
             <button type="submit">Book Now</button>
         </form>
 
-        <!-- Success/ Error Messages -->
         <div id="responseMessage" class="success" style="display: none;"></div>
     </div>
 
     <script>
-        // ✅ Load available tables dynamically
         async function loadTables() {
             try {
                 const response = await fetch('/api/tables/');
                 if (response.ok) {
                     const tables = await response.json();
                     const tableDropdown = document.getElementById('table');
-                    tableDropdown.innerHTML = '';  // Clear existing options
+                    tableDropdown.innerHTML = '';
 
-                    // Populate table dropdown with available tables
                     tables.forEach(table => {
                         tableDropdown.innerHTML += `<option value="${table.id}">Table ${table.table_number} (Capacity: ${table.capacity})</option>`;
                     });
@@ -144,14 +139,11 @@
             }
         }
 
-        // ✅ Load tables when page loads
         window.onload = loadTables;
 
-        // ✅ Handle form submission for customer and reservation
         document.getElementById('reservationForm').onsubmit = async function(e) {
             e.preventDefault();
 
-            // Collect form data
             const formData = {
                 name: document.getElementById('name').value,
                 email: document.getElementById('email').value,
@@ -159,11 +151,10 @@
                 date: document.getElementById('date').value,
                 time: document.getElementById('time').value,
                 guests: parseInt(document.getElementById('guests').value),
-                table: parseInt(document.getElementById('table').value)  // ✅ Get selected table dynamically
+                table: parseInt(document.getElementById('table').value)
             };
 
             try {
-                // ✅ Step 1: Create Customer
                 const customerResponse = await fetch('/api/customers/', {
                     method: 'POST',
                     headers: {
@@ -182,7 +173,6 @@
                 if (customerResponse.status === 200 || customerResponse.status === 201) {
                     const customerId = customerData.id;
 
-                    // ✅ Step 2: Create Reservation with dynamic table selection
                     const reservationResponse = await fetch('/api/reservations/', {
                         method: 'POST',
                         headers: {
@@ -204,12 +194,10 @@
 
                     const reservationData = await reservationResponse.json();
 
-                    // ✅ Show success message
                     document.getElementById('responseMessage').style.display = 'block';
                     document.getElementById('responseMessage').className = 'success';
                     document.getElementById('responseMessage').innerText = '🎉 Reservation successful! You will receive a confirmation email shortly.';
 
-                    // Clear form after success
                     document.getElementById('reservationForm').reset();
 
                 } else {
@@ -217,7 +205,6 @@
                 }
 
             } catch (error) {
-                // ❌ Show error message
                 document.getElementById('responseMessage').style.display = 'block';
                 document.getElementById('responseMessage').className = 'error';
                 document.getElementById('responseMessage').innerText = `❌ Error: ${error.message}`;

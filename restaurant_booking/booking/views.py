@@ -8,12 +8,10 @@ from django.conf import settings
 import json
 
 
-# ✅ Home View for Rendering Homepage
 def home(request):
     return render(request, 'booking/index.html')
 
 
-# ✅ Utility: Send Confirmation Email
 def send_confirmation_email(reservation):
     """Send email confirmation after reservation."""
     subject = "Table Reservation Confirmation"
@@ -37,7 +35,6 @@ def send_confirmation_email(reservation):
     )
 
 
-# ✅ Customer CRUD API with Duplicate Email Check
 class CustomerListCreateView(generics.ListCreateAPIView):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
@@ -47,10 +44,8 @@ class CustomerListCreateView(generics.ListCreateAPIView):
         try:
             print("🔍 Incoming Customer Data: ", json.dumps(request.data, indent=4))
             
-            # Get customer data from request
             email = request.data.get("email")
 
-            # Check if customer with email already exists
             if Customer.objects.filter(email=email).exists():
                 existing_customer = Customer.objects.get(email=email)
                 return Response(
@@ -58,7 +53,6 @@ class CustomerListCreateView(generics.ListCreateAPIView):
                     status=status.HTTP_200_OK,
                 )
             
-            # If customer does not exist, create a new one
             return super().create(request, *args, **kwargs)
 
         except Exception as e:
@@ -74,7 +68,6 @@ class CustomerDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CustomerSerializer
 
 
-# ✅ Table CRUD API
 class TableListCreateView(generics.ListCreateAPIView):
     queryset = Table.objects.all()
     serializer_class = TableSerializer
@@ -84,9 +77,6 @@ class TableDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Table.objects.all()
     serializer_class = TableSerializer
 
-
-# ✅ Reservation CRUD API
-# views.py
 class ReservationListCreateView(generics.ListCreateAPIView):
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
@@ -100,17 +90,14 @@ class ReservationListCreateView(generics.ListCreateAPIView):
             date = data.get("date")
             time = data.get("time")
 
-            # ✅ Check if the table is available for the selected date and time
             if Reservation.objects.filter(table_id=table_id, date=date, time=time).exists():
                 return Response(
                     {"error": "The selected table is already reserved for this time."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # ✅ Proceed with creating the reservation
             response = super().create(request, *args, **kwargs)
 
-            # Send confirmation email after successful reservation
             reservation = Reservation.objects.get(id=response.data["id"])
             send_confirmation_email(reservation)
 
@@ -122,8 +109,6 @@ class ReservationListCreateView(generics.ListCreateAPIView):
                 {"error": "Failed to create reservation."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-
-
 
 class ReservationDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Reservation.objects.all()
