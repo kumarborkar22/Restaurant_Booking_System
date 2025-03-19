@@ -50,27 +50,29 @@
     <div class="table-container" id="tableContainer"></div>
 
     <script>
-        // Fetch booked tables correctly
-const bookedTables = JSON.parse(localStorage.getItem('bookedTables')) || [];
-
-// Check and render booked or available tables correctly
-function renderTables() {
-    const tableContainer = document.getElementById('tableContainer');
-    tableContainer.innerHTML = '';
-
-    for (let i = 1; i <= 10; i++) {
-        const isBooked = bookedTables.includes(i);
-        const tableDiv = document.createElement('div');
-        tableDiv.className = `table ${isBooked ? 'booked' : 'available'}`;
-        tableDiv.innerText = `Table ${i}`;
-
-        tableContainer.appendChild(tableDiv);
-    }
-}
-
-
-        // Load tables on page load
+        // ✅ Parse booked tables correctly from Django
+        const bookedTables = JSON.parse('{{ booked_tables|safe|escapejs }}');
+        console.log("📚 Booked Tables:", bookedTables);
+    
+        function renderTables() {
+            const tableContainer = document.getElementById('tableContainer');
+            tableContainer.innerHTML = '';
+    
+            for (let i = 1; i <= 10; i++) {
+                const isBooked = bookedTables.includes(i); // ✅ Correct check here
+                const tableDiv = document.createElement('div');
+                tableDiv.className = `table ${isBooked ? 'booked' : 'available'}`;
+                tableDiv.innerText = `Table ${i}`;
+    
+                tableContainer.appendChild(tableDiv);
+            }
+        }
+    
         window.onload = renderTables;
     </script>
+    
+    
+    
+    
 </body>
 </html>

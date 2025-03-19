@@ -116,11 +116,14 @@ class ReservationDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 from django.shortcuts import render
 import json
+from datetime import date
 
 # def index(request):
 #     return render(request, 'index.html')
 
 def table_status(request):
-    booked_tables = request.GET.get('booked', '[]')
-    booked_tables = json.loads(booked_tables)
-    return render(request, 'booking/tables.html', {'booked_tables': booked_tables})
+    reservations = Reservation.objects.values_list('table__table_number', flat=True)
+    booked_tables = list(reservations)  # Convert to list of table numbers
+
+    # ✅ Pass as JSON string
+    return render(request, 'booking/tables.html', {'booked_tables': json.dumps(booked_tables)})
