@@ -119,24 +119,21 @@
     </div>
 
     <script>
-        async function loadTables() {
-            try {
-                const response = await fetch('/api/tables/');
-                if (response.ok) {
-                    const tables = await response.json();
-                    const tableDropdown = document.getElementById('table');
-                    tableDropdown.innerHTML = '';
-
-                    tables.forEach(table => {
-                        tableDropdown.innerHTML += `<option value="${table.id}">Table ${table.table_number} (Capacity: ${table.capacity})</option>`;
-                    });
-                } else {
-                    throw new Error('Failed to load tables.');
-                }
-            } catch (error) {
-                console.error(`❌ Error loading tables: ${error.message}`);
-                document.getElementById('table').innerHTML = `<option value="">Error loading tables!</option>`;
-            }
+        // ✅ Hardcode tables manually
+        function loadTables() {
+            const tableDropdown = document.getElementById('table');
+            tableDropdown.innerHTML = `
+                <option value="1">Table 1 (Capacity: 2)</option>
+                <option value="2">Table 2 (Capacity: 4)</option>
+                <option value="3">Table 3 (Capacity: 6)</option>
+                <option value="4">Table 4 (Capacity: 8)</option>
+                <option value="5">Table 5 (Capacity: 10)</option>
+                <option value="6">Table 6 (Capacity: 12)</option>
+                <option value="7">Table 7 (Capacity: 14)</option>
+                <option value="8">Table 8 (Capacity: 16)</option>
+                <option value="9">Table 9 (Capacity: 18)</option>
+                <option value="10">Table 10 (Capacity: 20)</option>
+            `;
         }
 
         window.onload = loadTables;
@@ -155,6 +152,7 @@
             };
 
             try {
+                // ✅ Create customer
                 const customerResponse = await fetch('/api/customers/', {
                     method: 'POST',
                     headers: {
@@ -173,6 +171,7 @@
                 if (customerResponse.status === 200 || customerResponse.status === 201) {
                     const customerId = customerData.id;
 
+                    // ✅ Create reservation
                     const reservationResponse = await fetch('/api/reservations/', {
                         method: 'POST',
                         headers: {
@@ -194,9 +193,20 @@
 
                     const reservationData = await reservationResponse.json();
 
+                    // ✅ Show success message
                     document.getElementById('responseMessage').style.display = 'block';
                     document.getElementById('responseMessage').className = 'success';
-                    document.getElementById('responseMessage').innerText = '🎉 Reservation successful! You will receive a confirmation email shortly.';
+                    document.getElementById('responseMessage').innerText = '🎉 Reservation successful! Redirecting...';
+
+                    // ✅ Store booked table in localStorage
+                    const bookedTables = JSON.parse(localStorage.getItem('bookedTables')) || [];
+                    bookedTables.push(formData.table);
+                    localStorage.setItem('bookedTables', JSON.stringify(bookedTables));
+
+                    // ✅ Redirect to table status page after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = "/tables/";
+                    }, 2000);
 
                     document.getElementById('reservationForm').reset();
 

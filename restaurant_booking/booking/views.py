@@ -113,3 +113,14 @@ class ReservationListCreateView(generics.ListCreateAPIView):
 class ReservationDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
+
+from django.shortcuts import render
+import json
+
+# def index(request):
+#     return render(request, 'index.html')
+
+def table_status(request):
+    booked_tables = request.GET.get('booked', '[]')
+    booked_tables = json.loads(booked_tables)
+    return render(request, 'booking/tables.html', {'booked_tables': booked_tables})

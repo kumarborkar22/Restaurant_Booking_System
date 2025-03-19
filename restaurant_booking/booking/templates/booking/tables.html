@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Table Status</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .table-container {
+            display: grid;
+            grid-template-columns: repeat(5, 100px);
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .table {
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+        }
+
+        .available {
+            background-color: #28a745; /* Green */
+        }
+
+        .booked {
+            background-color: #dc3545; /* Red */
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <h1>Table Status</h1>
+    <div class="table-container" id="tableContainer"></div>
+
+    <script>
+        // Example of booked tables (can be fetched from API later)
+        const bookedTables = JSON.parse(localStorage.getItem('bookedTables')) || [];
+
+        function renderTables() {
+            const tableContainer = document.getElementById('tableContainer');
+            tableContainer.innerHTML = '';
+
+            for (let i = 1; i <= 10; i++) {
+                const isBooked = bookedTables.includes(i);
+                const tableDiv = document.createElement('div');
+                tableDiv.className = `table ${isBooked ? 'booked' : 'available'}`;
+                tableDiv.innerText = `Table ${i}`;
+
+                tableContainer.appendChild(tableDiv);
+            }
+        }
+
+        // Load tables on page load
+        window.onload = renderTables;
+    </script>
+</body>
+</html>
