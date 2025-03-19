@@ -132,3 +132,6 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'kumarborkar403@gmail.com' 
 EMAIL_HOST_PASSWORD = 'uqhr yzqk jkrd npoy' 
+
+LOGIN_URL = '/'  # Redirect to login if not authenticated
+LOGIN_REDIRECT_URL = '/index/'  # After login, redirect here

@@ -140,3 +140,35 @@ def table_status(request):
         'booked_tables': json.dumps(booked_tables),
         'last_booked_table': last_booked_table
     })
+
+
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+
+# ✅ Login View
+def user_login(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+
+        # ✅ Authenticate user
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            return redirect('index')  # Redirect to index.html after login
+        else:
+            return render(request, 'booking/login.html', {'error_message': '❌ Invalid Credentials'})
+
+    return render(request, 'booking/login.html')
+
+# ✅ Index Page (Protected)
+@login_required
+def index(request):
+    return render(request, 'booking/index.html')
+
+# ✅ Logout View
+def user_logout(request):
+    logout(request)
+    return redirect('login')  # Redirect to login after logout
