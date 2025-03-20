@@ -172,3 +172,25 @@ def index(request):
 def user_logout(request):
     logout(request)
     return redirect('login')  # Redirect to login after logout
+
+from django.shortcuts import render, redirect
+from .models import Reservation
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+
+# ✅ Admin Dashboard to View/Manage Bookings
+@login_required
+def admin_dashboard(request):
+    reservations = Reservation.objects.select_related('customer', 'table').order_by('-id')
+    return render(request, 'booking/admin_dashboard.html', {'reservations': reservations})
+
+# ✅ Cancel Booking API
+@login_required
+def cancel_booking(request, reservation_id):
+    if request.method == 'POST':
+        try:
+            reservation = Reservation.objects.get(id=reservation_id)
+            reservation.delete()
+            return JsonResponse({'success': True, 'message': f'Reservation {reservation_id} canceled successfully!'})
+        except Reservation.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Reservation not found!'})

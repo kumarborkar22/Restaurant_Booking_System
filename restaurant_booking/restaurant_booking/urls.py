@@ -10,4 +10,6 @@ urlpatterns = [
     path('index/', views.index, name='index'),  # ✅ Redirect to index after login
     path('tables/', views.table_status, name='table_status'),  # ✅ Table status page
     path('logout/', views.user_logout, name='logout'),  # ✅ Logout route
+    path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),  # ✅ Admin Dashboard
+    path('cancel-booking/<int:reservation_id>/', views.cancel_booking, name='cancel_booking'),  # ✅ Cancel Booking
 ]
