@@ -162,45 +162,39 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 
-# ✅ Login View
 def user_login(request):
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
 
-        # ✅ Authenticate user
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
             login(request, user)
-            return redirect('index')  # Redirect to index.html after login
+            return redirect('index')
         else:
             return render(request, 'booking/login.html', {'error_message': '❌ Invalid Credentials'})
 
     return render(request, 'booking/login.html')
 
-# ✅ Index Page (Protected)
 @login_required
 def index(request):
     return render(request, 'booking/index.html')
 
-# ✅ Logout View
 def user_logout(request):
     logout(request)
-    return redirect('login')  # Redirect to login after logout
+    return redirect('login')
 
 from django.shortcuts import render, redirect
 from .models import Reservation
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 
-# ✅ Admin Dashboard to View/Manage Bookings
 @login_required
 def admin_dashboard(request):
     reservations = Reservation.objects.select_related('customer', 'table').order_by('-id')
     return render(request, 'booking/admin_dashboard.html', {'reservations': reservations})
 
-# ✅ Cancel Booking API
 @login_required
 def cancel_booking(request, reservation_id):
     if request.method == 'POST':
@@ -217,7 +211,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from .models import Reservation, Review, Table
 from .forms import ReviewForm
-# ✅ Submit review after reservation
 def submit_review(request, reservation_id):
     reservation = get_object_or_404(Reservation, id=reservation_id)
 

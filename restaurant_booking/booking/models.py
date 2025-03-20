@@ -24,7 +24,7 @@ class Reservation(models.Model):
     time = models.TimeField()
     guests = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
-    cancel_status = models.BooleanField(default=False)  # ✅ Track canceled status
+    cancel_status = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 
 
