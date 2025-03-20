@@ -119,7 +119,6 @@
     </div>
 
     <script>
-        // ✅ Hardcode tables manually (for simplicity)
         function loadTables() {
             const tableDropdown = document.getElementById('table');
             tableDropdown.innerHTML = `
@@ -138,8 +137,6 @@
 
         window.onload = loadTables;
 
-        // ✅ Correct booking and force refresh after booking
-        // ✅ Correct booking and force refresh after booking
 document.getElementById('reservationForm').onsubmit = async function (e) {
     e.preventDefault();
 
@@ -154,7 +151,6 @@ document.getElementById('reservationForm').onsubmit = async function (e) {
     };
 
     try {
-        // ✅ Create customer
         const customerResponse = await fetch('/api/customers/', {
             method: 'POST',
             headers: {
@@ -173,7 +169,6 @@ document.getElementById('reservationForm').onsubmit = async function (e) {
         if (customerResponse.status === 200 || customerResponse.status === 201) {
             const customerId = customerData.id;
 
-            // ✅ Create reservation
             const reservationResponse = await fetch('/api/reservations/', {
                 method: 'POST',
                 headers: {
@@ -195,13 +190,11 @@ document.getElementById('reservationForm').onsubmit = async function (e) {
 
             const reservationData = await reservationResponse.json();
 
-            // ✅ Show success message
             document.getElementById('responseMessage').style.display = 'block';
             document.getElementById('responseMessage').className = 'success';
             document.getElementById('responseMessage').innerText =
                 `🎉 Reservation successful! You booked Table ${formData.table}`;
 
-            // ✅ Redirect to /tables/ after 2 seconds to show the last booked table
             setTimeout(() => {
                 window.location.href = '/tables/';
             }, 2000);

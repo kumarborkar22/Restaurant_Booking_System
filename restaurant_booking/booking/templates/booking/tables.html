@@ -53,25 +53,21 @@
             transform: scale(1.05);
         }
 
-        /* ✅ Available Table - Green */
         .available {
             background-color: #28a745;
         }
 
-        /* ✅ Booked Table - Red */
         .booked {
             background-color: #dc3545;
             cursor: not-allowed;
         }
 
-        /* ✅ Last Booked - Yellow */
         .last-booked {
             background-color: #ffc107;
             color: #333;
             border: 2px solid #28a745;
         }
 
-        /* ✅ Review and Rating Styles */
         .rating {
             font-size: 14px;
             color: #ffc107;
@@ -89,7 +85,6 @@
             text-decoration: underline;
         }
 
-        /* ✅ Review Box Design */
         .review-box {
             position: absolute;
             bottom: 8px;
@@ -100,7 +95,6 @@
             padding: 5px;
         }
 
-        /* ✅ Last Booked Highlight */
         .last-booked .review-box {
             border: 2px solid #28a745;
         }
@@ -109,7 +103,6 @@
 <body>
     <h1>🍽️ Table Status</h1>
 
-    <!-- ✅ Show last booked table -->
     <h2>
         {% if last_booked_table %}
             ✅ Last Booked Table: <span style="color: #28a745;">Table {{ last_booked_table }}</span>
@@ -118,18 +111,14 @@
         {% endif %}
     </h2>
 
-    <!-- ✅ Table Container -->
     <div class="table-container" id="tableContainer"></div>
 
     <script>
-        // ✅ Get booked tables and last booked table from Django
         const bookedTables = JSON.parse(`{{ booked_tables|safe|escapejs }}`);
         let lastBookedTable = '{{ last_booked_table|default:"null" }}';
         
-        // ✅ Get review data from Django
         const tableReviews = JSON.parse(`{{ table_reviews|safe|escapejs }}`);
 
-        // ✅ Ensure lastBookedTable is parsed correctly
         if (lastBookedTable !== "null") {
             lastBookedTable = parseInt(lastBookedTable);
         } else {
@@ -140,7 +129,6 @@
         console.log("✅ Last Booked Table:", lastBookedTable);
         console.log("⭐ Table Reviews:", tableReviews);
 
-        // ✅ Render tables and reviews
         function renderTables() {
             const tableContainer = document.getElementById('tableContainer');
             tableContainer.innerHTML = '';
@@ -151,7 +139,6 @@
 
                 const tableDiv = document.createElement('div');
 
-                // ✅ Check for table status and apply class
                 if (isLastBooked) {
                     tableDiv.className = 'table last-booked';
                 } else if (isBooked) {
@@ -162,7 +149,6 @@
 
                 tableDiv.innerHTML = `<div>Table ${i}</div>`;
 
-                // ✅ Add review and rating
                 const reviewBox = document.createElement('div');
                 reviewBox.className = 'review-box';
 
@@ -180,7 +166,6 @@
             }
         }
 
-        // ✅ Show review details when clicking "View Reviews"
         function showReviewDetails(tableNumber) {
             const reviews = tableReviews[tableNumber].reviews;
             let reviewText = '📢 Table Reviews:\n\n';
@@ -196,7 +181,6 @@
             alert(reviewText);
         }
 
-        // ✅ Render tables on load
         window.onload = renderTables;
     </script>
 </body>
