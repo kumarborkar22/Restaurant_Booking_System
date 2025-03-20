@@ -114,32 +114,48 @@ class ReservationDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
 
-from django.shortcuts import render
 import json
-from datetime import date
 from django.http import JsonResponse
-
-# def index(request):
-#     return render(request, 'index.html')
+from django.shortcuts import render
+from django.db.models import Avg
+from .models import Reservation, Review, Table
 
 def table_status(request):
     # ✅ Get all booked tables (persist even after multiple bookings)
     reservations = Reservation.objects.values_list('table__table_number', flat=True)
     booked_tables = list(set(reservations))
-    
+
     # ✅ Get the last booked table
     last_reservation = Reservation.objects.order_by('-id').first()
     last_booked_table = last_reservation.table.table_number if last_reservation else None
 
+    # ✅ Add review and average rating logic
+    table_reviews = {}
+    tables = Table.objects.all()
+    for table in tables:
+        reviews = Review.objects.filter(reservation__table=table)
+        avg_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+        table_reviews[table.table_number] = {
+            'average_rating': round(avg_rating, 1),
+            'reviews': list(reviews.values('comment', 'rating'))
+        }
+
+    # ✅ Handle AJAX requests
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        # ✅ Return JSON for AJAX requests
-        return JsonResponse({'booked_tables': booked_tables, 'last_booked_table': last_booked_table})
+        # ✅ Return JSON for AJAX requests (dynamic updates)
+        return JsonResponse({
+            'booked_tables': booked_tables,
+            'last_booked_table': last_booked_table,
+            'table_reviews': table_reviews
+        })
 
     # ✅ Pass as JSON string for initial page load
     return render(request, 'booking/tables.html', {
         'booked_tables': json.dumps(booked_tables),
-        'last_booked_table': last_booked_table
+        'last_booked_table': last_booked_table,
+        'table_reviews': json.dumps(table_reviews)
     })
+
 
 
 from django.shortcuts import render, redirect
@@ -194,3 +210,25 @@ def cancel_booking(request, reservation_id):
             return JsonResponse({'success': True, 'message': f'Reservation {reservation_id} canceled successfully!'})
         except Reservation.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Reservation not found!'})
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
+from .models import Reservation, Review, Table
+from .forms import ReviewForm
+# ✅ Submit review after reservation
+def submit_review(request, reservation_id):
+    reservation = get_object_or_404(Reservation, id=reservation_id)
+
+    if request.method == 'POST':
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.reservation = reservation
+            review.save()
+            return redirect('table_status')
+    else:
+        form = ReviewForm()
+
+    return render(request, 'booking/review_form.html', {'form': form, 'reservation': reservation})

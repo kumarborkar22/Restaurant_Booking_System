@@ -3,56 +3,111 @@
 <head>
     <title>Table Status</title>
     <style>
+        /* ✅ General Styles */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f8f8;
+            font-family: 'Poppins', Arial, sans-serif;
+            background-color: #f4f7fa;
             margin: 0;
-            padding: 20px;
-            text-align: center;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
         }
 
         h1, h2 {
             color: #333;
+            margin-bottom: 10px;
         }
 
+        /* ✅ Container for Tables */
         .table-container {
             display: grid;
-            grid-template-columns: repeat(5, 100px);
-            gap: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
             justify-content: center;
-            margin-top: 20px;
+            padding: 20px;
+            max-width: 800px;
         }
 
+        /* ✅ Individual Table Card */
         .table {
-            width: 100px;
-            height: 100px;
-            border-radius: 8px;
+            width: 120px;
+            height: 120px;
+            border-radius: 12px;
             display: flex;
             justify-content: center;
             align-items: center;
+            flex-direction: column;
             font-weight: bold;
             color: white;
             cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease-in-out;
+            position: relative;
         }
 
+        /* ✅ Hover Animation */
+        .table:hover {
+            transform: scale(1.05);
+        }
+
+        /* ✅ Available Table - Green */
         .available {
-            background-color: #28a745; /* Green */
+            background-color: #28a745;
         }
 
+        /* ✅ Booked Table - Red */
         .booked {
-            background-color: #dc3545; /* Red */
+            background-color: #dc3545;
             cursor: not-allowed;
         }
 
+        /* ✅ Last Booked - Yellow */
         .last-booked {
-            background-color: #ffc107; /* Yellow */
+            background-color: #ffc107;
             color: #333;
+            border: 2px solid #28a745;
+        }
+
+        /* ✅ Review and Rating Styles */
+        .rating {
+            font-size: 14px;
+            color: #ffc107;
+            margin-top: 5px;
+        }
+
+        .review-link {
+            font-size: 12px;
+            margin-top: 5px;
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .review-link:hover {
+            text-decoration: underline;
+        }
+
+        /* ✅ Review Box Design */
+        .review-box {
+            position: absolute;
+            bottom: 8px;
+            width: 90%;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            padding: 5px;
+        }
+
+        /* ✅ Last Booked Highlight */
+        .last-booked .review-box {
             border: 2px solid #28a745;
         }
     </style>
 </head>
 <body>
-    <h1>Table Status</h1>
+    <h1>🍽️ Table Status</h1>
 
     <!-- ✅ Show last booked table -->
     <h2>
@@ -63,52 +118,86 @@
         {% endif %}
     </h2>
 
+    <!-- ✅ Table Container -->
     <div class="table-container" id="tableContainer"></div>
 
     <script>
         // ✅ Get booked tables and last booked table from Django
-        const bookedTables = JSON.parse('{{ booked_tables|safe|escapejs }}');
+        const bookedTables = JSON.parse(`{{ booked_tables|safe|escapejs }}`);
         let lastBookedTable = '{{ last_booked_table|default:"null" }}';
-    
+        
+        // ✅ Get review data from Django
+        const tableReviews = JSON.parse(`{{ table_reviews|safe|escapejs }}`);
+
         // ✅ Ensure lastBookedTable is parsed correctly
         if (lastBookedTable !== "null") {
-            lastBookedTable = parseInt(lastBookedTable); // Convert to number if not null
+            lastBookedTable = parseInt(lastBookedTable);
         } else {
-            lastBookedTable = null; // Keep as null if no table booked yet
+            lastBookedTable = null;
         }
-    
+
         console.log("📚 Booked Tables:", bookedTables);
         console.log("✅ Last Booked Table:", lastBookedTable);
-    
+        console.log("⭐ Table Reviews:", tableReviews);
+
+        // ✅ Render tables and reviews
         function renderTables() {
             const tableContainer = document.getElementById('tableContainer');
-            tableContainer.innerHTML = ''; // Clear previous table rendering
-    
+            tableContainer.innerHTML = '';
+
             for (let i = 1; i <= 10; i++) {
-                const isBooked = bookedTables.includes(i); // Check if the table is booked
-                const isLastBooked = i === lastBookedTable; // Check if it's the last booked
-    
+                const isBooked = bookedTables.includes(i);
+                const isLastBooked = i === lastBookedTable;
+
                 const tableDiv = document.createElement('div');
-    
-                // ✅ Correct logic to show multiple booked tables with one highlighted
+
+                // ✅ Check for table status and apply class
                 if (isLastBooked) {
-                    tableDiv.className = 'table last-booked'; // Highlight last booked
+                    tableDiv.className = 'table last-booked';
                 } else if (isBooked) {
-                    tableDiv.className = 'table booked'; // Mark others in red
+                    tableDiv.className = 'table booked';
                 } else {
-                    tableDiv.className = 'table available'; // Available = green
+                    tableDiv.className = 'table available';
                 }
-    
-                tableDiv.innerText = `Table ${i}`;
+
+                tableDiv.innerHTML = `<div>Table ${i}</div>`;
+
+                // ✅ Add review and rating
+                const reviewBox = document.createElement('div');
+                reviewBox.className = 'review-box';
+
+                if (tableReviews[i]) {
+                    reviewBox.innerHTML = `
+                        <div class="rating">⭐ ${tableReviews[i].average_rating}/5</div>
+                        <a class="review-link" onclick="showReviewDetails(${i})">View Reviews</a>
+                    `;
+                } else {
+                    reviewBox.innerHTML = `<div class="rating">⭐ No Reviews Yet</div>`;
+                }
+
+                tableDiv.appendChild(reviewBox);
                 tableContainer.appendChild(tableDiv);
             }
         }
-    
+
+        // ✅ Show review details when clicking "View Reviews"
+        function showReviewDetails(tableNumber) {
+            const reviews = tableReviews[tableNumber].reviews;
+            let reviewText = '📢 Table Reviews:\n\n';
+
+            if (reviews.length > 0) {
+                reviews.forEach((review, index) => {
+                    reviewText += `#${index + 1}: ${review.comment} (⭐ ${review.rating}/5)\n`;
+                });
+            } else {
+                reviewText = 'No reviews available for this table.';
+            }
+
+            alert(reviewText);
+        }
+
         // ✅ Render tables on load
         window.onload = renderTables;
     </script>
-    
-    
-    
 </body>
 </html>

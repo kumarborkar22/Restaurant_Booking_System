@@ -12,4 +12,6 @@ urlpatterns = [
     path('logout/', views.user_logout, name='logout'),  # ✅ Logout route
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),  # ✅ Admin Dashboard
     path('cancel-booking/<int:reservation_id>/', views.cancel_booking, name='cancel_booking'),  # ✅ Cancel Booking
+    path('review/<int:reservation_id>/', views.submit_review, name='submit_review'),
+
 ]
