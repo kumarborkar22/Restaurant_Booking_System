@@ -43,6 +43,7 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s ease-in-out;
             position: relative;
+            margin-top: 20px;
         }
 
         .table:hover {
@@ -64,6 +65,39 @@
             border: 2px solid #28a745;
         }
 
+        /* ✅ New Hover Effect for Table Number */
+        .table-number {
+            position: absolute;
+            top: -30px;
+            left: 5px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 5px 8px;
+            border-radius: 8px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .table:hover .table-number {
+            opacity: 1;
+        }
+
+        .review-box {
+            position: absolute;
+            bottom: 8px;
+            width: 90%;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            padding: 5px;
+            margin-top: 5px; /* Space between reviews and table */
+        }
+
+        .last-booked .review-box {
+            border: 2px solid #28a745;
+        }
+
         .rating {
             font-size: 14px;
             color: #ffc107;
@@ -79,20 +113,6 @@
 
         .review-link:hover {
             text-decoration: underline;
-        }
-
-        .review-box {
-            position: absolute;
-            bottom: 8px;
-            width: 90%;
-            text-align: center;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 8px;
-            padding: 5px;
-        }
-
-        .last-booked .review-box {
-            border: 2px solid #28a745;
         }
 
         /* ✅ Modal Styles */
@@ -215,7 +235,8 @@
                     tableDiv.className = 'table available';
                 }
 
-                tableDiv.innerHTML = `<div>Table ${i}</div>`;
+                // ✅ Table Number Hidden by Default, Shows on Hover
+                tableDiv.innerHTML = `<div class="table-number">Table ${i}</div>`;
 
                 const reviewBox = document.createElement('div');
                 reviewBox.className = 'review-box';
