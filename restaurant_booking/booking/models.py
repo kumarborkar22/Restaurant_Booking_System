@@ -33,7 +33,7 @@ class Reservation(models.Model):
 
 class Review(models.Model):
     reservation = models.OneToOneField(Reservation, on_delete=models.CASCADE)
-    rating = models.IntegerField(default=5)  # Rating 1 to 5
+    rating = models.IntegerField(default=5)
     comment = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

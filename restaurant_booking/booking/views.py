@@ -242,11 +242,9 @@ def add_review(request):
             rating = int(data.get('rating'))
             comment = data.get('comment')
 
-            # ✅ Get the latest reservation for the table
             reservation = Reservation.objects.filter(table__table_number=table_number).order_by('-id').first()
 
             if reservation:
-                # ✅ Create a new review
                 review = Review.objects.create(
                     reservation=reservation,
                     rating=rating,

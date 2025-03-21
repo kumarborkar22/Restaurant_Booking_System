@@ -51,21 +51,20 @@
         }
 
         .available {
-            background-color: #28a745; /* Green for available */
+            background-color: #28a745;
         }
 
         .booked {
-            background-color: #dc3545; /* Red for booked */
+            background-color: #dc3545;
             cursor: not-allowed;
         }
 
         .last-booked {
-            background-color: #ffc107; /* Yellow for last booked */
+            background-color: #ffc107;
             color: #333;
             border: 2px solid #28a745;
         }
 
-        /* ✅ New Hover Effect for Table Number */
         .table-number {
             position: absolute;
             top: -30px;
@@ -91,7 +90,7 @@
             background: rgba(255, 255, 255, 0.9);
             border-radius: 8px;
             padding: 5px;
-            margin-top: 5px; /* Space between reviews and table */
+            margin-top: 5px;
         }
 
         .last-booked .review-box {
@@ -115,7 +114,6 @@
             text-decoration: underline;
         }
 
-        /* ✅ Modal Styles */
         #reviewModal {
             display: none;
             position: fixed;
@@ -180,7 +178,6 @@
 
     <div class="table-container" id="tableContainer"></div>
 
-    <!-- ✅ Review Modal for Adding Reviews -->
     <div id="reviewModal">
         <div class="modal-content">
             <h2>📝 Submit Review</h2>
@@ -235,7 +232,6 @@
                     tableDiv.className = 'table available';
                 }
 
-                // ✅ Table Number Hidden by Default, Shows on Hover
                 tableDiv.innerHTML = `<div class="table-number">Table ${i}</div>`;
 
                 const reviewBox = document.createElement('div');
@@ -313,7 +309,7 @@
             if (response.ok) {
                 alert('✅ Review Added Successfully!');
                 closeModal();
-                window.location.reload(); // Reload page to update reviews
+                window.location.reload();
             } else {
                 alert('❌ Error submitting review. Try again!');
             }

@@ -13,7 +13,7 @@ urlpatterns = [
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('cancel-booking/<int:reservation_id>/', views.cancel_booking, name='cancel_booking'),
     path('review/<int:reservation_id>/', views.submit_review, name='submit_review'),
-    path('add_review/', views.add_review, name='add_review'),  # <-- Add this for review submission
+    path('add_review/', views.add_review, name='add_review'),
 
 
 ]
