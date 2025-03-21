@@ -225,3 +225,40 @@ def submit_review(request, reservation_id):
         form = ReviewForm()
 
     return render(request, 'booking/review_form.html', {'form': form, 'reservation': reservation})
+
+
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from .models import Reservation, Review
+
+@csrf_exempt
+def add_review(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            table_number = int(data.get('table_number'))
+            rating = int(data.get('rating'))
+            comment = data.get('comment')
+
+            # ✅ Get the latest reservation for the table
+            reservation = Reservation.objects.filter(table__table_number=table_number).order_by('-id').first()
+
+            if reservation:
+                # ✅ Create a new review
+                review = Review.objects.create(
+                    reservation=reservation,
+                    rating=rating,
+                    comment=comment
+                )
+                return JsonResponse({'success': True, 'message': 'Review added successfully!'})
+            else:
+                return JsonResponse({'success': False, 'error': 'No reservation found for this table!'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method!'})
+
+
+

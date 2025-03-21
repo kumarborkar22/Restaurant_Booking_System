@@ -50,16 +50,16 @@
         }
 
         .available {
-            background-color: #28a745;
+            background-color: #28a745; /* Green for available */
         }
 
         .booked {
-            background-color: #dc3545;
+            background-color: #dc3545; /* Red for booked */
             cursor: not-allowed;
         }
 
         .last-booked {
-            background-color: #ffc107;
+            background-color: #ffc107; /* Yellow for last booked */
             color: #333;
             border: 2px solid #28a745;
         }
@@ -94,6 +94,57 @@
         .last-booked .review-box {
             border: 2px solid #28a745;
         }
+
+        /* ✅ Modal Styles */
+        #reviewModal {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            width: 300px;
+            margin: 100px auto;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+        }
+
+        .modal-content textarea {
+            width: 100%;
+            margin-top: 10px;
+            padding: 5px;
+            border-radius: 8px;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn-submit {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-cancel {
+            background-color: #dc3545;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -109,10 +160,31 @@
 
     <div class="table-container" id="tableContainer"></div>
 
+    <!-- ✅ Review Modal for Adding Reviews -->
+    <div id="reviewModal">
+        <div class="modal-content">
+            <h2>📝 Submit Review</h2>
+            <input type="hidden" id="selectedTable" />
+            <label for="rating">⭐ Rating:</label>
+            <select id="rating">
+                <option value="5">⭐️⭐️⭐️⭐️⭐️ - Excellent</option>
+                <option value="4">⭐️⭐️⭐️⭐️ - Good</option>
+                <option value="3">⭐️⭐️⭐️ - Average</option>
+                <option value="2">⭐️⭐️ - Poor</option>
+                <option value="1">⭐️ - Bad</option>
+            </select>
+
+            <label for="comment" style="margin-top: 10px;">💬 Comment:</label>
+            <textarea id="comment" rows="4" placeholder="Write your review here..." required></textarea>
+
+            <button class="btn-submit" onclick="submitReview()">✅ Submit Review</button>
+            <button class="btn-cancel" onclick="closeModal()">❌ Cancel</button>
+        </div>
+    </div>
+
     <script>
         const bookedTables = JSON.parse(`{{ booked_tables|safe|escapejs }}`);
         let lastBookedTable = '{{ last_booked_table|default:"null" }}';
-        
         const tableReviews = JSON.parse(`{{ table_reviews|safe|escapejs }}`);
 
         if (lastBookedTable !== "null") {
@@ -148,10 +220,13 @@
                 const reviewBox = document.createElement('div');
                 reviewBox.className = 'review-box';
 
-                if (tableReviews[i]) {
+                if (isBooked) {
                     reviewBox.innerHTML = `
-                        <div class="rating">⭐ ${tableReviews[i].average_rating}/5</div>
+                        <div class="rating">⭐ ${tableReviews[i]?.average_rating || 'No Rating Yet'}/5</div>
                         <a class="review-link" onclick="showReviewDetails(${i})">View Reviews</a>
+                        <button onclick="openReviewModal(${i})" class="review-btn" style="margin-top: 5px; background-color: #007bff; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">
+                            📝 Add Review
+                        </button>
                     `;
                 } else {
                     reviewBox.innerHTML = `<div class="rating">⭐ No Reviews Yet</div>`;
@@ -163,7 +238,7 @@
         }
 
         function showReviewDetails(tableNumber) {
-            const reviews = tableReviews[tableNumber].reviews;
+            const reviews = tableReviews[tableNumber]?.reviews || [];
             let reviewText = '📢 Table Reviews:\n\n';
 
             if (reviews.length > 0) {
@@ -175,6 +250,52 @@
             }
 
             alert(reviewText);
+        }
+
+        let selectedTableNumber = null;
+
+        function openReviewModal(tableNumber) {
+            selectedTableNumber = tableNumber;
+            document.getElementById('selectedTable').value = tableNumber;
+            document.getElementById('reviewModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('reviewModal').style.display = 'none';
+        }
+
+        async function submitReview() {
+            const tableNumber = document.getElementById('selectedTable').value;
+            const rating = document.getElementById('rating').value;
+            const comment = document.getElementById('comment').value;
+
+            if (!rating || !comment.trim()) {
+                alert('❌ Please provide a rating and a comment.');
+                return;
+            }
+
+            const data = {
+                table_number: tableNumber,
+                rating: rating,
+                comment: comment
+            };
+
+            const response = await fetch('/add_review/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                alert('✅ Review Added Successfully!');
+                closeModal();
+                window.location.reload(); // Reload page to update reviews
+            } else {
+                alert('❌ Error submitting review. Try again!');
+            }
         }
 
         window.onload = renderTables;
